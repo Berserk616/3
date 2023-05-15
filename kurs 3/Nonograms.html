@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Nonogram Puzzle</title>
+	<style>
+		table {
+			border-collapse: collapse;
+		}
+
+		td {
+			width: 30px;
+			height: 30px;
+			border: 1px solid black;
+			text-align: center;
+			vertical-align: middle;
+			cursor: pointer;
+		}
+
+		.row-hints {
+			text-align: right;
+			padding-right: 5px;
+		}
+
+		.col-hints {
+			text-align: center;
+		}
+
+		.banner {
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			background-color: white;
+			padding: 20px;
+			border: 2px solid black;
+			z-index: 1;
+			display: none;
+		}
+
+		.correct {
+			background-color: red;
+		}
+	</style>
+</head>
+<body>
+	<table id="puzzle">
+		<thead>
+			<tr>
+				<th></th>
+				<th class="col-hints">1</th>
+				<th class="col-hints">2</th>
+				<th class="col-hints">3</th>
+				<th class="col-hints">4</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<th class="row-hints">1</th>
+				<td id="cell-0-0"></td>
+				<td id="cell-0-1"></td>
+				<td id="cell-0-2"></td>
+				<td id="cell-0-3"></td>
+			</tr>
+			<tr>
+				<th class="row-hints">2</th>
+				<td id="cell-1-0"></td>
+				<td id="cell-1-1"></td>
+				<td id="cell-1-2"></td>
+				<td id="cell-1-3"></td>
+			</tr>
+			<tr>
+				<th class="row-hints">3</th>
+				<td id="cell-2-0"></td>
+				<td id="cell-2-1"></td>
+				<td id="cell-2-2"></td>
+				<td id="cell-2-3"></td>
+			</tr>
+			<tr>
+				<th class="row-hints">4</th>
+				<td id="cell-3-0"></td>
+				<td id="cell-3-1"></td>
+				<td id="cell-3-2"></td>
+				<td id="cell-3-3"></td>
+			</tr>
+		</tbody>
+	</table>
+	<br>
+	<button onclick="checkResult()">Check Result</button>
+	<div id="banner" class="banner">
+		<p>Правильный решение:</p>
+		<table>
+			<tbody>
+				<tr>
+					<td></td>
+					<td class="col-hints">1</td>
+					<td class="col-hints">2</td>
+					<td class="col-hints">3</td>
+					<td class="col-hints">4</td>
+				</tr>
+				<tr>
+					<th class="row-hints">1</th>
+					<td id="result-0-0"></td>
+					<td id="result-0-1"></td>
+					<td id="result-0-2"></td>
+					<td id="result-0-3"></td>
+				</tr>
+				<tr>
+					<th class="row-hints">2</th>
+					<td id="result-1-0"></td>
+					<td id="result-1-1"></td>
+					<td id="result-1-2"></td>
+					<td id="result-1-3"></td>
+				</tr>
+				<tr>
+					<th class="row-hints">3</th>
+					<td id="result-2-0"></td>
+					<td id="result-2-1"></td>
+					<td id="result-2-2"></td>
+					<td id="result-2-3"></td>
+				</tr>
+				<tr>
+					<th class="row-hints">4</th>
+					<td id="result-3-0"></td>
+					<td id="result-3-1"></td>
+					<td id="result-3-2"></td>
+					<td id="result-3-3"></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<script>
+		// Определите решение головоломки
+		const solution = [
+			[1, 0, 0, 1],
+			[0, 1, 1, 0],
+			[0, 1, 1, 0],
+			[1, 0, 0, 1]
+		];
+
+		// Инициализируйте сетку головоломки
+		const grid = [];
+		for (let i = 0; i < 4; i++) {
+			grid[i] = [];
+			for (let j = 0; j < 4; j++) {
+				const cell = document.getElementById(`cell-${i}-${j}`);
+				cell.addEventListener('click', () => {
+					if (cell.style.backgroundColor === 'green') {
+						cell.style.backgroundColor = '';
+					} else {
+						cell.style.backgroundColor = 'green';
+					}
+				});
+				grid[i][j] = cell;
+			}
+		}
+
+		// Определите подсказки
+		const rowHints = [
+			[1,1],
+			[2],
+			[2],
+			[1,1]
+		];
+
+		const colHints = [
+			[1, 1],
+			[2],
+			[2],
+			[1, 1]
+		];
+
+		// Обновите подсказки
+		updateHints();
+
+		function updateHints() {
+			// Подсказки по обновлению строк
+			for (let i = 0; i < 4; i++) {
+				const rowHint = rowHints[i];
+				const hintCell = document.querySelector(`#puzzle tr:nth-of-type(${i + 1}) th.row-hints`);
+				hintCell.textContent = rowHint.join(' ');
+			}
+
+			// Update column hints
+			for (let j = 0; j < 4; j++) {
+				const colHint = colHints[j];
+				const hintCell = document.querySelector(`#puzzle thead th:nth-of-type(${j + 2})`);
+				hintCell.textContent = colHint.join('\n');
+			}
+		}
+
+		function checkResult() {
+			// Проверьте, соответствует ли сетка решению
+			let isCorrect = true;
+			for (let i = 0; i < 4; i++) {
+				for (let j = 0; j < 4; j++) {
+					const cell = grid[i][j];
+					const solutionValue = solution[i][j];
+					if ((cell.style.backgroundColor === 'green' && solutionValue === 0) ||
+						(cell.style.backgroundColor !== 'green' && solutionValue === 1)) {
+						isCorrect = false;
+						break;
+					}
+				}
+				if (!isCorrect) {
+					break;
+				}
+			}
+
+			// Покажите баннер с результатом
+			const banner = document.getElementById('banner');
+			const resultTable = banner.querySelector('table');
+			for (let i = 0; i < 4; i++) {
+				for (let j = 0; j < 4; j++) {
+					const cell = resultTable.querySelector(`#result-${i}-${j}`);
+					const solutionValue = solution[i][j];
+					cell.textContent = solutionValue;
+					if (solutionValue === 1) {
+						cell.classList.add('correct');
+					} else {
+						cell.classList.remove('correct');
+					}
+				}
+			}
+			if (isCorrect) {
+				banner.innerHTML = '<p>Поздравляем, Вы решили нонограмм!</p>';
+			} else {
+				banner.innerHTML = '<p>Простите,выше решение неправильное.</p>' + banner.innerHTML;
+			}
+			banner.style.display = 'block';
+		}
+	</script>
+</body>
+</html>
